@@ -1,0 +1,36 @@
+FROM node:18-bookworm
+
+LABEL author="Frontshop Co."
+LABEL contact="cs@frontshop.co"
+
+# libvips Version
+ENV LIBVIPS_VERSION 8.15.0
+
+# Install essential libraries
+RUN \
+  apt update && \
+  apt install -y --no-install-recommends \
+    automake build-essential curl \
+    cdbs debhelper dh-autoreconf flex bison meson
+
+# Download libvips source code
+RUN \
+  cd /tmp && \
+  wget https://github.com/libvips/libvips/archive/refs/tags/v$LIBVIPS_VERSION.tar.gz && \
+  tar zxvf v$LIBVIPS_VERSION.tar.gz && \
+  rm v$LIBVIPS_VERSION.tar.gz
+
+# Build and Install libvips
+RUN \
+  cd /tmp/libvips-$LIBVIPS_VERSION && \
+  meson setup build-dir && \
+  cd build-dir && \
+  ninja && \
+  ninja install
+
+# Cleaning Image
+RUN \
+  rm -rf /tmp/libvips-$LIBVIPS_VERSION && \
+  apt clean
+
+WORKDIR /app
